@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>綠色職場永續數據儀表板 (Green Workplace ESG Dashboard)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            50: '#f0f7f4',
+                            100: '#e0efe9',
+                            500: '#2d6a4f',
+                            600: '#1b4332',
+                            700: '#081c15',
+                        },
+                        emerald: {
+                            500: '#10b981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+    <!-- Navigation Header -->
+    <header class="bg-forest-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-500 rounded-lg text-forest-700">
+                    <i data-lucide="sprout" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">綠色職場永續數據儀表板</h1>
+                    <p class="text-xs text-emerald-200">Green Workplace ESG Dashboard</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="openModal('waste')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-sm transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> 投放廚餘/資材
+                </button>
+                <button onclick="openModal('bio')" class="bg-forest-500 hover:bg-forest-700 text-white border border-emerald-400 px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-sm transition">
+                    <i data-lucide="bug" class="w-4 h-4 mr-2"></i> 生物多樣性紀錄
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- KPI Impact Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-100 flex items-center space-x-4">
+                <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+                    <i data-lucide="scale" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">累計處理廢棄物</p>
+                    <p class="text-2xl font-bold text-slate-800" id="kpi-total-waste">0 <span class="text-sm font-normal text-slate-500">kg</span></p>
+                    <p class="text-xs text-emerald-600 mt-1">GRI 306-4 廢棄物轉化</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-100 flex items-center space-x-4">
+                <div class="p-3 bg-teal-100 text-teal-600 rounded-xl">
+                    <i data-lucide="cloud-off" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">估算範疇三減碳</p>
+                    <p class="text-2xl font-bold text-slate-800" id="kpi-carbon-reduced">0 <span class="text-sm font-normal text-slate-500">kg CO₂e</span></p>
+                    <p class="text-xs text-teal-600 mt-1">基於 2.1 kgCO₂e/kg 替代率</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-100 flex items-center space-x-4">
+                <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                    <i data-lucide="sparkles" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">產出有機蚓糞肥</p>
+                    <p class="text-2xl font-bold text-slate-800" id="kpi-vermicompost">0 <span class="text-sm font-normal text-slate-500">kg</span></p>
+                    <p class="text-xs text-amber-600 mt-1">替代化學肥料 / 固碳肥料</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-100 flex items-center space-x-4">
+                <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                    <i data-lucide="camera" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">生態觀察日誌</p>
+                    <p class="text-2xl font-bold text-slate-800" id="kpi-bio-logs">0 <span class="text-sm font-normal text-slate-500">筆照片與紀錄</span></p>
+                    <p class="text-xs text-indigo-600 mt-1">TNFD / GRI 304 生物多樣性</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Switcher Tabs -->
+        <div class="flex border-b border-slate-200">
+            <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="py-3 px-6 text-sm font-semibold text-emerald-600 border-b-2 border-emerald-500 flex items-center space-x-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>數據分析與趨勢</span>
+            </button>
+            <button id="tab-btn-gallery" onclick="switchTab('gallery')" class="py-3 px-6 text-sm font-semibold text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+                <i data-lucide="image" class="w-4 h-4"></i>
+                <span>生態觀察照片牆</span>
+            </button>
+        </div>
+
+        <!-- Section 1: Dashboard View -->
+        <div id="view-dashboard" class="space-y-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+                <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+                    <i data-lucide="trending-up" class="w-5 h-5 mr-2 text-forest-500"></i>
+                    廢棄物轉化與減碳趨勢
+                </h2>
+                <div class="h-72">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Photo Gallery View (Hidden by default) -->
+        <div id="view-gallery" class="hidden space-y-6">
+            <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Dynamic Photo Cards Will Appear Here -->
+            </div>
+            <div id="gallery-empty" class="text-center py-12 text-slate-400 hidden">
+                <i data-lucide="image-off" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                <p>目前尚無照片紀錄，請在新增資料時上傳照片！</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Data Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">歷史紀錄數據庫</h2>
+                    <p class="text-xs text-slate-400">所有條目均可導出為 GRI 認證相容格式</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="table-search" oninput="renderTable()" placeholder="搜尋類別、部門或備註..." class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <button onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-sm transition">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i> 導出 CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100">
+                            <th class="p-4">照片</th>
+                            <th class="p-4">日期</th>
+                            <th class="p-4">記錄類型</th>
+                            <th class="p-4">細項類別</th>
+                            <th class="p-4">數量 / 指標</th>
+                            <th class="p-4">估算減碳</th>
+                            <th class="p-4">記錄部門/人員</th>
+                            <th class="p-4">照片與備註</th>
+                            <th class="p-4 text-right">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body" class="divide-y divide-slate-100 text-slate-700">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form -->
+    <div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-forest-600 text-white p-4 px-6 flex justify-between items-center">
+                <h3 id="modal-title" class="text-lg font-bold flex items-center">
+                    <i data-lucide="edit-3" class="w-5 h-5 mr-2"></i> 新增紀錄
+                </h3>
+                <button onclick="closeModal()" class="text-slate-200 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <form id="record-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+                <input type="hidden" id="form-type" value="waste">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">日期</label>
+                    <input type="date" id="form-date" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div id="field-category-waste">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">廢棄物/資材種類</label>
+                    <select id="form-category-waste" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="咖啡渣">辦公室咖啡渣</option>
+                        <option value="茶渣">茶葉渣/茶包</option>
+                        <option value="團膳廚餘">員工團膳廚餘 (植物性)</option>
+                        <option value="園區落葉">園區落葉與枯枝</option>
+                    </select>
+                </div>
+
+                <div id="field-amount-waste">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">投放重量 (kg)</label>
+                    <input type="number" step="0.1" id="form-amount" placeholder="例如：12.5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div id="field-bio-details" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">觀察主題</label>
+                        <input type="text" id="form-bio-title" placeholder="例如：蚯蚓翻耕活躍度 / 土壤蕈類觀察" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">蚯蚓活躍度評分 (1-5 星)</label>
+                        <select id="form-worm-rating" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="5">⭐⭐⭐⭐⭐ (極度活躍/集群明顯)</option>
+                            <option value="4">⭐⭐⭐⭐ (良好進食)</option>
+                            <option value="3">⭐⭐⭐ (正常活動)</option>
+                            <option value="2">⭐⭐ (活動偏緩慢)</option>
+                            <option value="1">⭐ (需要調整環境濕度/通氣)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Photo Upload Field -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">現場照片 (相片觀察與憑證)</label>
+                    <input type="file" id="form-photo" accept="image/*" onchange="previewImage(event)" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-forest-50 file:text-forest-600 hover:file:bg-forest-100">
+                    <div id="photo-preview-container" class="mt-3 hidden relative w-32 h-32 rounded-lg border border-slate-200 overflow-hidden">
+                        <img id="photo-preview" src="" class="w-full h-full object-cover">
+                        <button type="button" onclick="removePhoto()" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">記錄部門 / 填寫人</label>
+                    <input type="text" id="form-dept" placeholder="例如：行政總務部 / 劉小明" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">備註 / 生物狀態紀錄</label>
+                    <textarea id="form-notes" rows="3" placeholder="紀錄現場氣味、濕度或特異觀察..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium shadow-sm">儲存紀錄</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden p-4" onclick="closeLightbox()">
+        <div class="max-w-3xl max-h-[90vh] relative">
+            <img id="lightbox-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain">
+            <p id="lightbox-caption" class="text-white text-center mt-3 text-sm"></p>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // Default Mock Data
+        let db = JSON.parse(localStorage.getItem('green_esg_db')) || [
+            { id: 1, date: '2026-10-15', type: 'waste', category: '咖啡渣', amount: 25.0, dept: '永續委員會', notes: '全棟茶水間咖啡渣收集', photo: '' },
+            { id: 2, date: '2026-10-16', type: 'waste', category: '團膳廚餘', amount: 40.0, dept: '總務部', notes: '植物性殘渣', photo: '' },
+            { id: 3, date: '2026-10-18', type: 'bio', category: '蚯蚓活躍度評分', title: '頂樓花園一號箱觀察', rating: 5, dept: 'HR綠色小組', notes: '發現大量幼蟲，環境濕度極佳', photo: '' }
+        ];
+
+        let currentPhotoBase64 = '';
+        let chartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            updateDashboard();
+            lucide.createIcons();
+        });
+
+        function switchTab(tab) {
+            if(tab === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('view-gallery').classList.add('hidden');
+                document.getElementById('tab-btn-dashboard').className = "py-3 px-6 text-sm font-semibold text-emerald-600 border-b-2
